@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Transport Manager Pro</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.0.0/tabler-icons.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --blue:#2563eb;--blue2:#1d4ed8;--blue3:#1e40af;
+  --teal:#0d9488;--amber:#d97706;--red:#dc2626;--green:#16a34a;
+  --bg:#f1f5f9;--card:#fff;--border:#e2e8f0;
+  --text:#0f172a;--text2:#475569;--text3:#94a3b8;
+}
+body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+/* ── LOGIN SCREEN ── */
+#lock-screen{position:fixed;inset:0;z-index:999;display:flex;align-items:center;justify-content:center;padding:24px;
+  background:linear-gradient(135deg,#1e3a8a 0%,#1e40af 40%,#0f766e 100%)}
+.lock-card{background:rgba(255,255,255,.07);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.15);
+  border-radius:24px;padding:40px 32px;width:100%;max-width:360px;text-align:center}
+.lock-logo{width:72px;height:72px;border-radius:20px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);
+  display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:32px;color:#fff}
+.lock-title{font-size:22px;font-weight:700;color:#fff;margin-bottom:4px}
+.lock-sub{font-size:13px;color:rgba(255,255,255,.6);margin-bottom:28px}
+.pin-dots{display:flex;justify-content:center;gap:14px;margin-bottom:24px}
+.pin-dot{width:14px;height:14px;border-radius:50%;border:2px solid rgba(255,255,255,.4);background:transparent;transition:all .2s}
+.pin-dot.filled{background:#fff;border-color:#fff;transform:scale(1.1)}
+.pin-dot.error{background:#f87171;border-color:#f87171}
+.pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:240px;margin:0 auto}
+.pin-btn{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:14px;
+  padding:16px 10px;font-size:20px;font-weight:600;color:#fff;cursor:pointer;transition:all .15s;user-select:none}
+.pin-btn:active{background:rgba(255,255,255,.25);transform:scale(.95)}
+.pin-btn.del{font-size:16px}
+.pin-error{color:#fca5a5;font-size:13px;margin-top:10px;min-height:20px}
+
+/* ── HEADER ── */
+.header{background:linear-gradient(135deg,#1e40af,#0f766e);padding:0 16px;position:sticky;top:0;z-index:100;
+  display:flex;align-items:center;gap:12px;height:58px;box-shadow:0 2px 12px rgba(0,0,0,.15)}
+.header-icon{width:34px;height:34px;border-radius:10px;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:18px;color:#fff}
+.header h1{font-size:17px;font-weight:700;color:#fff;flex:1}
+.hdr-badge{font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;background:rgba(255,255,255,.15);color:#fff}
+.hdr-badge.live{background:#16a34a;color:#fff}
+
+/* ── NAV ── */
+.nav{display:flex;overflow-x:auto;background:#fff;border-bottom:1px solid var(--border);
+  padding:0 8px;gap:0;scrollbar-width:none;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.nav::-webkit-scrollbar{display:none}
+.nav-btn{padding:13px 14px;font-size:12px;font-weight:700;border:none;background:none;cursor:pointer;
+  color:var(--text3);white-space:nowrap;border-bottom:2.5px solid transparent;display:flex;
+  align-items:center;gap:5px;transition:all .2s;letter-spacing:.2px;text-transform:uppercase}
+.nav-btn.active{color:var(--blue);border-bottom-color:var(--blue)}
+.nav-btn i{font-size:15px}
+
+/* ── PAGES ── */
+.page{display:none;padding:16px;padding-bottom:32px}
+.page.active{display:block}
+
+/* ── CARDS ── */
+.card{background:var(--card);border-radius:16px;padding:18px;margin-bottom:14px;border:1px solid var(--border);
+  box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.card-title{font-size:15px;font-weight:700;color:var(--text);margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.card-title i{font-size:18px;width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;background:#eff6ff;color:var(--blue)}
+
+/* ── FORM ── */
+.form-group{margin-bottom:14px}
+.form-group label{display:block;font-size:11px;font-weight:700;color:var(--text2);margin-bottom:6px;letter-spacing:.5px;text-transform:uppercase}
+input,select,textarea{width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:10px;
+  font-size:15px;background:#f8fafc;color:var(--text);transition:border .15s;-webkit-appearance:none}
+input:focus,select:focus{outline:none;border-color:var(--blue);background:#fff;box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.input-icon{position:relative}
+.input-icon i{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:16px;pointer-events:none}
+.input-icon input{padding-left:38px}
+
+/* ── BUTTONS ── */
+.btn{padding:13px 20px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;border:none;
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;transition:all .15s}
+.btn:active{transform:scale(.97)}
+.btn-primary{background:linear-gradient(135deg,var(--blue),var(--blue2));color:#fff;width:100%;
+  box-shadow:0 4px 14px rgba(37,99,235,.35)}
+.btn-sm{padding:8px 14px;font-size:13px;border-radius:8px}
+.btn-edit{background:#eff6ff;color:var(--blue);border:1px solid #bfdbfe}
+.btn-del{background:#fef2f2;color:var(--red);border:1px solid #fecaca}
+.btn-outline{background:#fff;color:var(--text2);border:1.5px solid var(--border)}
+
+/* ── METRICS ── */
+.metric-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px}
+.metric{background:#fff;border-radius:14px;padding:14px 10px;text-align:center;border:1px solid var(--border);
+  box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.metric .val{font-size:24px;font-weight:800;background:linear-gradient(135deg,var(--blue),var(--teal));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.metric .lbl{font-size:10px;font-weight:700;color:var(--text3);margin-top:3px;text-transform:uppercase;letter-spacing:.3px}
+
+/* ── ALERTS ── */
+.alert{padding:12px 14px;border-radius:10px;font-size:13px;font-weight:600;margin-bottom:12px;display:none;align-items:center;gap:8px}
+.alert.show{display:flex}
+.alert-success{background:#f0fdf4;color:var(--green);border:1px solid #bbf7d0}
+.alert-error{background:#fef2f2;color:var(--red);border:1px solid #fecaca}
+.alert-info{background:#eff6ff;color:var(--blue);border:1px solid #bfdbfe}
+
+/* ── ENTRY CARDS ── */
+.e-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:10px;
+  box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.e-route{font-size:15px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:6px}
+.e-meta{font-size:12px;color:var(--text3);margin-top:4px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.e-actions{display:flex;gap:8px;margin-top:12px}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700}
+.badge-blue{background:#dbeafe;color:#1e40af}
+.badge-green{background:#dcfce7;color:#166534}
+.badge-amber{background:#fef3c7;color:#92400e}
+
+/* ── SEARCH ── */
+.search-wrap{position:relative;margin-bottom:12px}
+.search-wrap i{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:17px}
+.search-wrap input{padding-left:40px;background:#f8fafc}
+
+/* ── CHARTS ── */
+.chart-wrap{position:relative;height:200px;margin-top:8px}
+.chart-wrap.tall{height:240px}
+
+/* ── DEEP TABS ── */
+.dtab-row{display:flex;overflow-x:auto;gap:8px;margin-bottom:16px;scrollbar-width:none;padding-bottom:2px}
+.dtab-row::-webkit-scrollbar{display:none}
+.dtab{padding:9px 16px;border-radius:20px;font-size:12px;font-weight:700;border:1.5px solid var(--border);
+  background:#fff;cursor:pointer;color:var(--text2);white-space:nowrap;display:flex;align-items:center;gap:5px;letter-spacing:.2px}
+.dtab.active{background:linear-gradient(135deg,var(--blue),var(--teal));color:#fff;border-color:transparent;
+  box-shadow:0 4px 12px rgba(37,99,235,.3)}
+.deep-sec{display:none}.deep-sec.active{display:block}
+
+/* ── TABLE ── */
+.tbl-wrap{overflow-x:auto;margin-top:14px;border-radius:10px;border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;min-width:320px}
+th{text-align:left;padding:10px 12px;font-size:10px;font-weight:800;color:var(--text3);background:#f8fafc;
+  text-transform:uppercase;letter-spacing:.5px}
+td{padding:10px 12px;font-size:13px;border-top:1px solid var(--border);color:var(--text)}
+
+/* ── MODAL ── */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:200;align-items:flex-end}
+.modal-bg.open{display:flex}
+.modal{background:#fff;border-radius:24px 24px 0 0;padding:20px 16px 32px;width:100%;max-height:90vh;overflow-y:auto}
+.modal-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+.modal-hdr span{font-size:17px;font-weight:700;color:var(--text)}
+.modal-close{width:32px;height:32px;border-radius:8px;background:#f1f5f9;border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;color:var(--text2);font-size:18px}
+
+/* ── SETUP STEPS ── */
+.step-item{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--border)}
+.step-item:last-child{border-bottom:none}
+.step-num{min-width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--blue),var(--teal));
+  color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800}
+.step-txt{font-size:13px;color:var(--text2);line-height:1.7}
+.step-txt strong{color:var(--text)}
+code{background:#f1f5f9;padding:2px 7px;border-radius:5px;font-family:monospace;font-size:12px;color:#1e40af}
+
+/* ── HERO BANNER ── */
+.hero{background:linear-gradient(135deg,var(--blue),var(--teal));border-radius:16px;padding:18px;
+  margin-bottom:16px;color:#fff;display:flex;align-items:center;gap:14px}
+.hero-icon{width:52px;height:52px;border-radius:14px;background:rgba(255,255,255,.15);
+  display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0}
+.hero h2{font-size:16px;font-weight:700;margin-bottom:3px}
+.hero p{font-size:12px;opacity:.8;line-height:1.5}
+
+@media(max-width:360px){.form-row,.metric-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<!-- ══ LOCK SCREEN ══ -->
+<div id="lock-screen">
+  <div class="lock-card">
+    <div class="lock-logo"><i class="ti ti-truck"></i></div>
+    <div class="lock-title">Transport Manager</div>
+    <div class="lock-sub">Apna PIN enter karo</div>
+    <div class="pin-dots" id="pin-dots">
+      <div class="pin-dot" id="d0"></div>
+      <div class="pin-dot" id="d1"></div>
+      <div class="pin-dot" id="d2"></div>
+      <div class="pin-dot" id="d3"></div>
+    </div>
+    <div class="pin-pad">
+      <button class="pin-btn" onclick="pinPress('1')">1</button>
+      <button class="pin-btn" onclick="pinPress('2')">2</button>
+      <button class="pin-btn" onclick="pinPress('3')">3</button>
+      <button class="pin-btn" onclick="pinPress('4')">4</button>
+      <button class="pin-btn" onclick="pinPress('5')">5</button>
+      <button class="pin-btn" onclick="pinPress('6')">6</button>
+      <button class="pin-btn" onclick="pinPress('7')">7</button>
+      <button class="pin-btn" onclick="pinPress('8')">8</button>
+      <button class="pin-btn" onclick="pinPress('9')">9</button>
+      <button class="pin-btn" onclick="pinPress('')" style="opacity:0;pointer-events:none"></button>
+      <button class="pin-btn" onclick="pinPress('0')">0</button>
+      <button class="pin-btn del" onclick="pinDel()"><i class="ti ti-backspace"></i></button>
+    </div>
+    <div class="pin-error" id="pin-error"></div>
+    <div style="margin-top:16px;font-size:11px;color:rgba(255,255,255,.4)">Default PIN: 1234</div>
+  </div>
+</div>
+
+<!-- ══ MAIN APP ══ -->
+<div id="main-app" style="display:none">
+
+<div class="header">
+  <div class="header-icon"><i class="ti ti-truck"></i></div>
+  <h1>Transport Pro</h1>
+  <span class="hdr-badge" id="hdr-status">Setup karo</span>
+</div>
+
+<div class="nav">
+  <button class="nav-btn active" onclick="showPage('add',this)"><i class="ti ti-plus"></i>Entry</button>
+  <button class="nav-btn" onclick="showPage('entries',this)"><i class="ti ti-list"></i>Entries</button>
+  <button class="nav-btn" onclick="showPage('analysis',this)"><i class="ti ti-chart-bar"></i>Analysis</button>
+  <button class="nav-btn" onclick="showPage('deep',this)"><i class="ti ti-zoom-in"></i>Deep</button>
+  <button class="nav-btn" onclick="showPage('setup',this)"><i class="ti ti-settings"></i>Setup</button>
+</div>
+
+<!-- ADD ENTRY PAGE -->
+<div id="page-add" class="page active">
+  <div class="hero">
+    <div class="hero-icon"><i class="ti ti-plus"></i></div>
+    <div><h2>Nayi Trip Entry</h2><p>Neeche form bharke naya trip record karo</p></div>
+  </div>
+  <div id="add-alert" class="alert"></div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-calendar"></i> Trip details</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Tarikh</label>
+        <input type="date" id="f-date">
+      </div>
+      <div class="form-group">
+        <label>Truck no.</label>
+        <div class="input-icon"><i class="ti ti-truck"></i><input type="text" id="f-truck" placeholder="MP09AB1234"></div>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Pickup jagah</label>
+        <div class="input-icon"><i class="ti ti-map-pin"></i><input type="text" id="f-pickup" placeholder="Ratlam"></div>
+      </div>
+      <div class="form-group">
+        <label>Drop jagah</label>
+        <div class="input-icon"><i class="ti ti-map-pin-2"></i><input type="text" id="f-drop" placeholder="Indore"></div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Maal (goods)</label>
+      <div class="input-icon"><i class="ti ti-package"></i><input type="text" id="f-goods" placeholder="Gehun, Cement, Lohe ki rod..."></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Driver naam</label>
+        <div class="input-icon"><i class="ti ti-user"></i><input type="text" id="f-driver" placeholder="Ramesh Kumar"></div>
+      </div>
+      <div class="form-group">
+        <label>Wajan (tonne)</label>
+        <div class="input-icon"><i class="ti ti-weight"></i><input type="number" id="f-weight" placeholder="15.5" step="0.1" min="0"></div>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="addEntry()">
+      <i class="ti ti-device-floppy"></i> Entry Save Karo
+    </button>
+  </div>
+</div>
+
+<!-- ENTRIES PAGE -->
+<div id="page-entries" class="page">
+  <div id="entries-alert" class="alert"></div>
+  <div class="card" style="padding:14px">
+    <div class="search-wrap">
+      <i class="ti ti-search"></i>
+      <input type="text" id="search-inp" placeholder="Truck, driver, jagah se dhundo..." oninput="filterEntries()">
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <span id="entry-count" style="font-size:12px;font-weight:700;color:var(--text3)"></span>
+      <button class="btn btn-outline btn-sm" onclick="loadEntries()"><i class="ti ti-refresh"></i> Refresh</button>
+    </div>
+    <div id="entries-list"></div>
+  </div>
+</div>
+
+<!-- ANALYSIS PAGE -->
+<div id="page-analysis" class="page">
+  <div class="hero">
+    <div class="hero-icon"><i class="ti ti-chart-bar"></i></div>
+    <div><h2>Business Analysis</h2><p>Apne poore business ka overview</p></div>
+  </div>
+  <div class="metric-grid">
+    <div class="metric"><div class="val" id="m1">—</div><div class="lbl">Trips</div></div>
+    <div class="metric"><div class="val" id="m2">—</div><div class="lbl">Weight T</div></div>
+    <div class="metric"><div class="val" id="m3">—</div><div class="lbl">Trucks</div></div>
+    <div class="metric"><div class="val" id="m4">—</div><div class="lbl">Drivers</div></div>
+    <div class="metric"><div class="val" id="m5">—</div><div class="lbl">Routes</div></div>
+    <div class="metric"><div class="val" id="m6">—</div><div class="lbl">Avg T</div></div>
+  </div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-calendar-stats"></i> Monthly trips</div>
+    <div class="chart-wrap"><canvas id="c-month" role="img" aria-label="Monthly trips chart">Monthly trips</canvas></div>
+  </div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-route"></i> Top routes</div>
+    <div class="chart-wrap"><canvas id="c-route2" role="img" aria-label="Top routes chart">Routes</canvas></div>
+  </div>
+</div>
+
+<!-- DEEP ANALYSIS PAGE -->
+<div id="page-deep" class="page">
+  <div class="hero">
+    <div class="hero-icon"><i class="ti ti-zoom-in"></i></div>
+    <div><h2>Deep Analysis</h2><p>Truck, Driver, Maal aur Route ka gehri jaankari</p></div>
+  </div>
+  <div class="dtab-row">
+    <button class="dtab active" onclick="switchDeep('truck',this)"><i class="ti ti-truck"></i> Truck</button>
+    <button class="dtab" onclick="switchDeep('driver',this)"><i class="ti ti-user"></i> Driver</button>
+    <button class="dtab" onclick="switchDeep('goods',this)"><i class="ti ti-package"></i> Maal</button>
+    <button class="dtab" onclick="switchDeep('route',this)"><i class="ti ti-route"></i> Route</button>
+    <button class="dtab" onclick="switchDeep('month',this)"><i class="ti ti-calendar"></i> Month</button>
+  </div>
+  <div id="ds-truck" class="deep-sec active">
+    <div class="card"><div class="card-title"><i class="ti ti-truck"></i> Truck performance</div>
+      <div class="chart-wrap tall"><canvas id="c-truck" role="img" aria-label="Truck chart">Truck data</canvas></div>
+      <div id="truck-tbl" class="tbl-wrap"></div></div>
+  </div>
+  <div id="ds-driver" class="deep-sec">
+    <div class="card"><div class="card-title"><i class="ti ti-user"></i> Driver performance</div>
+      <div class="chart-wrap tall"><canvas id="c-driver" role="img" aria-label="Driver chart">Driver data</canvas></div>
+      <div id="driver-tbl" class="tbl-wrap"></div></div>
+  </div>
+  <div id="ds-goods" class="deep-sec">
+    <div class="card"><div class="card-title"><i class="ti ti-package"></i> Maal analysis</div>
+      <div class="chart-wrap tall"><canvas id="c-goods" role="img" aria-label="Goods chart">Goods data</canvas></div>
+      <div id="goods-tbl" class="tbl-wrap"></div></div>
+  </div>
+  <div id="ds-route" class="deep-sec">
+    <div class="card"><div class="card-title"><i class="ti ti-route"></i> Route analysis</div>
+      <div class="chart-wrap tall"><canvas id="c-route" role="img" aria-label="Route chart">Route data</canvas></div>
+      <div id="route-tbl" class="tbl-wrap"></div></div>
+  </div>
+  <div id="ds-month" class="deep-sec">
+    <div class="card"><div class="card-title"><i class="ti ti-calendar-stats"></i> Month-wise weight</div>
+      <div class="chart-wrap tall"><canvas id="c-mweight" role="img" aria-label="Month weight chart">Month data</canvas></div>
+      <div id="month-tbl" class="tbl-wrap"></div></div>
+  </div>
+</div>
+
+<!-- SETUP PAGE -->
+<div id="page-setup" class="page">
+  <div class="hero">
+    <div class="hero-icon"><i class="ti ti-settings"></i></div>
+    <div><h2>App Setup</h2><p>Google Sheets se connect karo</p></div>
+  </div>
+  <div id="setup-alert" class="alert"></div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-link"></i> Google Sheets URL</div>
+    <div class="form-group">
+      <label>Apps Script Web App URL</label>
+      <input type="url" id="cfg-url" placeholder="https://script.google.com/macros/s/.../exec">
+    </div>
+    <button class="btn btn-primary" onclick="saveUrl()"><i class="ti ti-check"></i> URL Save Karo</button>
+  </div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-lock"></i> PIN change karo</div>
+    <div class="form-row">
+      <div class="form-group"><label>Naya PIN (4 digit)</label><input type="number" id="new-pin" placeholder="1234" maxlength="4"></div>
+      <div class="form-group"><label>Confirm PIN</label><input type="number" id="confirm-pin" placeholder="1234" maxlength="4"></div>
+    </div>
+    <button class="btn btn-outline" onclick="changePin()"><i class="ti ti-lock-check"></i> PIN change karo</button>
+    <div id="pin-change-alert" class="alert" style="margin-top:10px"></div>
+  </div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-code"></i> Apps Script code</div>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:12px;line-height:1.6">Ye code Google Apps Script me paste karo phir deploy karo.</p>
+    <button class="btn btn-outline" onclick="copyScript()" style="width:100%;margin-bottom:10px"><i class="ti ti-copy"></i> Code copy karo</button>
+    <div id="copy-ok" class="alert"></div>
+    <textarea id="script-box" readonly style="font-family:monospace;font-size:11px;height:160px;background:#f8fafc;resize:none;border:1px solid var(--border);border-radius:10px;padding:12px;width:100%"></textarea>
+  </div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-help"></i> Setup kaise kare</div>
+    <div class="step-item"><div class="step-num">1</div><div class="step-txt"><strong>Google Sheets</strong> kholao — naya spreadsheet banao</div></div>
+    <div class="step-item"><div class="step-num">2</div><div class="step-txt">Row 1 me headers daalo: <code>Date, Pickup, Drop, Goods, Driver, Weight, TruckNo</code></div></div>
+    <div class="step-item"><div class="step-num">3</div><div class="step-txt"><strong>Extensions → Apps Script</strong> me jao, code paste karo</div></div>
+    <div class="step-item"><div class="step-num">4</div><div class="step-txt"><strong>Deploy → New deployment → Web app</strong> — Execute as: Me, Access: Anyone</div></div>
+    <div class="step-item"><div class="step-num">5</div><div class="step-txt">Deploy karo → URL copy karo → Upar paste karo → Save karo ✓</div></div>
+  </div>
+</div>
+
+</div>
+
+<!-- EDIT MODAL -->
+<div class="modal-bg" id="edit-modal">
+  <div class="modal">
+    <div class="modal-hdr">
+      <span>Entry Edit Karo</span>
+      <button class="modal-close" onclick="closeModal()"><i class="ti ti-x"></i></button>
+    </div>
+    <div id="modal-alert" class="alert"></div>
+    <input type="hidden" id="e-row">
+    <div class="form-row">
+      <div class="form-group"><label>Tarikh</label><input type="date" id="e-date"></div>
+      <div class="form-group"><label>Truck no.</label><input type="text" id="e-truck"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Pickup</label><input type="text" id="e-pickup"></div>
+      <div class="form-group"><label>Drop</label><input type="text" id="e-drop"></div>
+    </div>
+    <div class="form-group"><label>Maal</label><input type="text" id="e-goods"></div>
+    <div class="form-row">
+      <div class="form-group"><label>Driver</label><input type="text" id="e-driver"></div>
+      <div class="form-group"><label>Wajan (T)</label><input type="number" id="e-weight" step="0.1"></div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:8px">
+      <button class="btn btn-primary" onclick="saveEdit()" style="flex:1"><i class="ti ti-check"></i> Save karo</button>
+      <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const APPS_SCRIPT = `function doGet(e) {
+  var action = e.parameter.action;
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  if (action === "getAll") {
+    var data = sheet.getDataRange().getValues();
+    return ContentService.createTextOutput(JSON.stringify(data)).setMimeType(ContentService.MimeType.JSON);
+  }
+  if (action === "delete") {
+    var row = parseInt(e.parameter.row);
+    sheet.deleteRow(row);
+    return ContentService.createTextOutput(JSON.stringify({success:true})).setMimeType(ContentService.MimeType.JSON);
+  }
+  return ContentService.createTextOutput(JSON.stringify({error:"unknown"})).setMimeType(ContentService.MimeType.JSON);
+}
+
+function doPost(e) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  var data = JSON.parse(e.postData.contents);
+  if (data.action === "add") {
+    sheet.appendRow([data.date, data.pickup, data.drop, data.goods, data.driver, parseFloat(data.weight)||0, data.truck]);
+    return ContentService.createTextOutput(JSON.stringify({success:true})).setMimeType(ContentService.MimeType.JSON);
+  }
+  if (data.action === "edit") {
+    var row = parseInt(data.row);
+    sheet.getRange(row, 1, 1, 7).setValues([[data.date, data.pickup, data.drop, data.goods, data.driver, parseFloat(data.weight)||0, data.truck]]);
+    return ContentService.createTextOutput(JSON.stringify({success:true})).setMimeType(ContentService.MimeType.JSON);
+  }
+  return ContentService.createTextOutput(JSON.stringify({error:"unknown"})).setMimeType(ContentService.MimeType.JSON);
+}`;
+
+document.getElementById('script-box').value = APPS_SCRIPT;
+
+const URL_KEY = 'tport_url_v3';
+const PIN_KEY = 'tport_pin_v1';
+let webUrl = localStorage.getItem(URL_KEY) || '';
+let savedPin = localStorage.getItem(PIN_KEY) || '1234';
+let pinEntry = '';
+let allData = [], filteredData = [];
+let charts = {};
+
+function pinPress(d) {
+  if (pinEntry.length >= 4) return;
+  pinEntry += d;
+  updateDots();
+  if (pinEntry.length === 4) {
+    setTimeout(checkPin, 120);
+  }
+}
+function pinDel() {
+  pinEntry = pinEntry.slice(0, -1);
+  updateDots();
+}
+function updateDots(err) {
+  for (let i = 0; i < 4; i++) {
+    const dot = document.getElementById('d' + i);
+    dot.className = 'pin-dot' + (i < pinEntry.length ? ' filled' : '') + (err ? ' error' : '');
+  }
+}
+function checkPin() {
+  if (pinEntry === savedPin) {
+    document.getElementById('lock-screen').style.display = 'none';
+    document.getElementById('main-app').style.display = 'block';
+    init();
+  } else {
+    updateDots(true);
+    document.getElementById('pin-error').textContent = 'Galat PIN! Dobara try karo.';
+    setTimeout(() => {
+      pinEntry = '';
+      updateDots();
+      document.getElementById('pin-error').textContent = '';
+    }, 1200);
+  }
+}
+function changePin() {
+  const np = document.getElementById('new-pin').value.trim();
+  const cp = document.getElementById('confirm-pin').value.trim();
+  if (np.length !== 4 || isNaN(np)) { showA('pin-change-alert','4 digit ka PIN daalo!','error'); return; }
+  if (np !== cp) { showA('pin-change-alert','Dono PIN same nahi hain!','error'); return; }
+  localStorage.setItem(PIN_KEY, np);
+  savedPin = np;
+  document.getElementById('new-pin').value = '';
+  document.getElementById('confirm-pin').value = '';
+  showA('pin-change-alert','PIN change ho gaya!','success');
+}
+
+function init() {
+  document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
+  if (webUrl) {
+    document.getElementById('cfg-url').value = webUrl;
+    setStatus(true);
+  }
+}
+
+function setStatus(ok) {
+  const el = document.getElementById('hdr-status');
+  el.textContent = ok ? 'Live' : 'Setup karo';
+  el.className = ok ? 'hdr-badge live' : 'hdr-badge';
+}
+
+function saveUrl() {
+  const u = document.getElementById('cfg-url').value.trim();
+  if (!u) { showA('setup-alert','URL daalo pehle!','error'); return; }
+  localStorage.setItem(URL_KEY, u);
+  webUrl = u;
+  setStatus(true);
+  showA('setup-alert','URL save ho gayi! Ab data live load hoga.','success');
+}
+
+function copyScript() {
+  navigator.clipboard.writeText(APPS_SCRIPT)
+    .then(() => showA('copy-ok','Code copy ho gaya!','success'))
+    .catch(() => showA('copy-ok','Text box se manually copy karo.','error'));
+}
+
+function showA(id, msg, type) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = msg;
+  el.className = 'alert alert-' + type + ' show';
+  setTimeout(() => { el.className = 'alert'; }, 4000);
+}
+
+function showPage(p, btn) {
+  document.querySelectorAll('.page').forEach(x => x.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(x => x.classList.remove('active'));
+  document.getElementById('page-' + p).classList.add('active');
+  if (btn) btn.classList.add('active');
+  if (p === 'entries') loadEntries();
+  if (p === 'analysis' || p === 'deep') { if (!allData.length) loadEntries(); else { updateAnalysis(); updateDeep('truck'); } }
+}
+
+async function addEntry() {
+  const d = {
+    action:'add', date:document.getElementById('f-date').value,
+    truck:document.getElementById('f-truck').value.trim(),
+    pickup:document.getElementById('f-pickup').value.trim(),
+    drop:document.getElementById('f-drop').value.trim(),
+    goods:document.getElementById('f-goods').value.trim(),
+    driver:document.getElementById('f-driver').value.trim(),
+    weight:document.getElementById('f-weight').value
+  };
+  if (!d.date||!d.truck||!d.pickup||!d.drop||!d.driver||!d.weight) {
+    showA('add-alert','Sab fields bharni zaroori hain!','error'); return;
+  }
+  if (!webUrl) { showA('add-alert','Pehle Setup tab me URL save karo!','info'); return; }
+  showA('add-alert','Save ho raha hai...','info');
+  try {
+    const r = await fetch(webUrl, {method:'POST', body:JSON.stringify(d)});
+    const j = await r.json();
+    if (j.success) {
+      showA('add-alert','Entry save ho gayi!','success');
+      ['f-truck','f-pickup','f-drop','f-goods','f-driver','f-weight'].forEach(id => document.getElementById(id).value='');
+    } else showA('add-alert','Error: '+(j.error||'fail'),'error');
+  } catch(e) { showA('add-alert','Network error. URL check karo Setup me.','error'); }
+}
+
+async function loadEntries() {
+  if (!webUrl) {
+    document.getElementById('entries-list').innerHTML = '<div style="text-align:center;padding:40px;color:var(--text3)"><i class="ti ti-settings" style="font-size:40px;display:block;margin-bottom:10px"></i><span style="font-size:14px">Setup tab me URL save karo</span></div>';
+    return;
+  }
+  document.getElementById('entries-list').innerHTML = '<div style="text-align:center;padding:30px;color:var(--text3);font-size:14px"><i class="ti ti-loader" style="font-size:28px;display:block;margin-bottom:8px"></i>Load ho raha hai...</div>';
+  try {
+    const r = await fetch(webUrl + '?action=getAll');
+    const rows = await r.json();
+    if (!Array.isArray(rows) || rows.length < 2) {
+      document.getElementById('entries-list').innerHTML = '<div style="text-align:center;padding:40px;color:var(--text3);font-size:14px"><i class="ti ti-inbox" style="font-size:40px;display:block;margin-bottom:8px"></i>Koi entry nahi. Pehle add karo.</div>';
+      return;
+    }
+    allData = rows.slice(1).map((row, i) => ({
+      rowNum:i+2, date:(row[0]||'').toString(), pickup:(row[1]||'').toString(),
+      drop:(row[2]||'').toString(), goods:(row[3]||'').toString(),
+      driver:(row[4]||'').toString(), weight:parseFloat(row[5])||0, truck:(row[6]||'').toString()
+    }));
+    filteredData = [...allData];
+    renderEntries(); updateAnalysis(); updateDeep('truck');
+  } catch(e) {
+    document.getElementById('entries-list').innerHTML = '<div style="text-align:center;padding:30px;color:var(--red);font-size:14px">Load fail hua. URL check karo.</div>';
+  }
+}
+
+function filterEntries() {
+  const q = document.getElementById('search-inp').value.toLowerCase();
+  filteredData = allData.filter(e => [e.truck,e.pickup,e.drop,e.goods,e.driver].some(v=>v.toLowerCase().includes(q)));
+  renderEntries();
+}
+
+function renderEntries() {
+  document.getElementById('entry-count').textContent = filteredData.length + ' ENTRIES';
+  if (!filteredData.length) {
+    document.getElementById('entries-list').innerHTML = '<div style="text-align:center;padding:30px;color:var(--text3)">Koi entry nahi mili</div>';
+    return;
+  }
+  document.getElementById('entries-list').innerHTML = [...filteredData].reverse().map(e => `
+    <div class="e-card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div style="flex:1">
+          <div class="e-route">
+            <i class="ti ti-map-pin" style="color:var(--blue);font-size:14px"></i>
+            ${e.pickup} <i class="ti ti-arrow-right" style="font-size:13px;color:var(--text3)"></i> ${e.drop}
+          </div>
+          <div class="e-meta">
+            <span class="badge badge-blue"><i class="ti ti-truck" style="font-size:10px"></i>${e.truck}</span>
+            <span style="font-size:11px">${e.date}</span>
+          </div>
+          <div class="e-meta" style="margin-top:5px">
+            <span class="badge badge-green"><i class="ti ti-user" style="font-size:10px"></i>${e.driver}</span>
+            <span class="badge badge-amber"><i class="ti ti-package" style="font-size:10px"></i>${e.goods}</span>
+            <span style="font-weight:700;color:var(--text);font-size:13px">${e.weight}T</span>
+          </div>
+        </div>
+      </div>
+      <div class="e-actions">
+        <button class="btn btn-sm btn-edit" onclick="openEdit(${e.rowNum})"><i class="ti ti-edit"></i> Edit</button>
+        <button class="btn btn-sm btn-del" onclick="delEntry(${e.rowNum})"><i class="ti ti-trash"></i> Delete</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function openEdit(rowNum) {
+  const e = allData.find(x => x.rowNum===rowNum);
+  if (!e) return;
+  document.getElementById('e-row').value=rowNum; document.getElementById('e-date').value=e.date;
+  document.getElementById('e-truck').value=e.truck; document.getElementById('e-pickup').value=e.pickup;
+  document.getElementById('e-drop').value=e.drop; document.getElementById('e-goods').value=e.goods;
+  document.getElementById('e-driver').value=e.driver; document.getElementById('e-weight').value=e.weight;
+  document.getElementById('edit-modal').classList.add('open');
+}
+function closeModal() { document.getElementById('edit-modal').classList.remove('open'); }
+document.getElementById('edit-modal').addEventListener('click', function(e){ if(e.target===this) closeModal(); });
+
+async function saveEdit() {
+  const d = {
+    action:'edit', row:document.getElementById('e-row').value,
+    date:document.getElementById('e-date').value, truck:document.getElementById('e-truck').value,
+    pickup:document.getElementById('e-pickup').value, drop:document.getElementById('e-drop').value,
+    goods:document.getElementById('e-goods').value, driver:document.getElementById('e-driver').value,
+    weight:document.getElementById('e-weight').value
+  };
+  if (!webUrl) { closeModal(); return; }
+  showA('modal-alert','Save ho raha hai...','info');
+  try {
+    const r = await fetch(webUrl, {method:'POST', body:JSON.stringify(d)});
+    const j = await r.json();
+    if (j.success) { closeModal(); loadEntries(); showA('entries-alert','Entry update ho gayi!','success'); }
+    else showA('modal-alert','Error: '+(j.error||'fail'),'error');
+  } catch(e) { showA('modal-alert','Network error','error'); }
+}
+
+async function delEntry(rowNum) {
+  if (!confirm('Ye entry delete karna chahte ho?')) return;
+  if (!webUrl) return;
+  try {
+    await fetch(webUrl+'?action=delete&row='+rowNum);
+    showA('entries-alert','Entry delete ho gayi!','success'); loadEntries();
+  } catch(e) { showA('entries-alert','Delete fail hua','error'); }
+}
+
+function destroyChart(id) { if(charts[id]){charts[id].destroy();delete charts[id];} }
+
+function makeBar(id, labels, data, color) {
+  destroyChart(id);
+  const ctx = document.getElementById(id);
+  if (!ctx) return;
+  charts[id] = new Chart(ctx, {
+    type:'bar',
+    data:{labels, datasets:[{data, backgroundColor:color||'#2563eb', borderRadius:6, borderSkipped:false}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{ticks:{font:{size:10},maxRotation:40},grid:{display:false}},
+              y:{ticks:{font:{size:10}},grid:{color:'rgba(0,0,0,.04)'}}}}
+  });
+}
+
+function makePie(id, labels, data) {
+  destroyChart(id);
+  const ctx = document.getElementById(id);
+  if (!ctx) return;
+  const c=['#2563eb','#0d9488','#d97706','#dc2626','#7c3aed','#db2777','#059669','#64748b'];
+  charts[id] = new Chart(ctx, {
+    type:'doughnut',
+    data:{labels, datasets:[{data, backgroundColor:c.slice(0,labels.length), borderWidth:2, borderColor:'#fff'}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{font:{size:11},padding:8}}}}
+  });
+}
+
+function makeTable(cols, rows) {
+  if (!rows.length) return '<p style="padding:12px;color:var(--text3);font-size:13px">Data nahi hai</p>';
+  return `<table><thead><tr>${cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead>
+    <tbody>${rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+}
+
+function updateAnalysis() {
+  const d = allData;
+  if (!d.length) return;
+  const tw = d.reduce((s,e)=>s+e.weight,0);
+  document.getElementById('m1').textContent=d.length;
+  document.getElementById('m2').textContent=tw.toFixed(1);
+  document.getElementById('m3').textContent=new Set(d.map(e=>e.truck)).size;
+  document.getElementById('m4').textContent=new Set(d.map(e=>e.driver)).size;
+  document.getElementById('m5').textContent=new Set(d.map(e=>e.pickup+'→'+e.drop)).size;
+  document.getElementById('m6').textContent=(tw/d.length).toFixed(1);
+  const mMap={};
+  d.forEach(e=>{const m=(e.date||'').substring(0,7)||'?';mMap[m]=(mMap[m]||0)+1;});
+  const months=Object.keys(mMap).sort();
+  makeBar('c-month',months,months.map(m=>mMap[m]),'#2563eb');
+  const rMap={};
+  d.forEach(e=>{const r=e.pickup+'→'+e.drop;rMap[r]=(rMap[r]||0)+1;});
+  const topR=Object.entries(rMap).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  makeBar('c-route2',topR.map(x=>x[0]),topR.map(x=>x[1]),'#0d9488');
+}
+
+function switchDeep(tab, btn) {
+  document.querySelectorAll('.deep-sec').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.dtab').forEach(b=>b.classList.remove('active'));
+  document.getElementById('ds-'+tab).classList.add('active');
+  if(btn) btn.classList.add('active');
+  updateDeep(tab);
+}
+
+function updateDeep(tab) {
+  const d = allData; if (!d.length) return;
+  if (tab==='truck') {
+    const m={};
+    d.forEach(e=>{if(!m[e.truck])m[e.truck]={t:0,w:0};m[e.truck].t++;m[e.truck].w+=e.weight;});
+    const s=Object.entries(m).sort((a,b)=>b[1].t-a[1].t);
+    makeBar('c-truck',s.map(x=>x[0]),s.map(x=>x[1].t),'#2563eb');
+    document.getElementById('truck-tbl').innerHTML=makeTable(['Truck','Trips','Weight (T)','Avg (T)'],
+      s.map(([t,v])=>[`<span class="badge badge-blue">${t}</span>`,v.t,v.w.toFixed(1),(v.w/v.t).toFixed(1)]));
+  }
+  if (tab==='driver') {
+    const m={};
+    d.forEach(e=>{if(!m[e.driver])m[e.driver]={t:0,w:0,r:new Set()};m[e.driver].t++;m[e.driver].w+=e.weight;m[e.driver].r.add(e.pickup+'→'+e.drop);});
+    const s=Object.entries(m).sort((a,b)=>b[1].t-a[1].t);
+    makeBar('c-driver',s.map(x=>x[0]),s.map(x=>x[1].t),'#0d9488');
+    document.getElementById('driver-tbl').innerHTML=makeTable(['Driver','Trips','Weight (T)','Routes'],
+      s.map(([dr,v])=>[dr,v.t,v.w.toFixed(1),v.r.size]));
+  }
+  if (tab==='goods') {
+    const m={};
+    d.forEach(e=>{m[e.goods]=(m[e.goods]||0)+1;});
+    const s=Object.entries(m).sort((a,b)=>b[1]-a[1]).slice(0,8);
+    makePie('c-goods',s.map(x=>x[0]),s.map(x=>x[1]));
+    document.getElementById('goods-tbl').innerHTML=makeTable(['Maal','Trips','%'],
+      s.map(([g,c])=>[g,c,((c/d.length)*100).toFixed(1)+'%']));
+  }
+  if (tab==='route') {
+    const m={};
+    d.forEach(e=>{const r=e.pickup+'→'+e.drop;if(!m[r])m[r]={t:0,w:0};m[r].t++;m[r].w+=e.weight;});
+    const s=Object.entries(m).sort((a,b)=>b[1].t-a[1].t).slice(0,8);
+    makeBar('c-route',s.map(x=>x[0]),s.map(x=>x[1].t),'#d97706');
+    document.getElementById('route-tbl').innerHTML=makeTable(['Route','Trips','Weight (T)','Avg (T)'],
+      s.map(([r,v])=>[r,v.t,v.w.toFixed(1),(v.w/v.t).toFixed(1)]));
+  }
+  if (tab==='month') {
+    const m={};
+    d.forEach(e=>{const mn=(e.date||'').substring(0,7)||'?';if(!m[mn])m[mn]={t:0,w:0};m[mn].t++;m[mn].w+=e.weight;});
+    const s=Object.keys(m).sort().map(k=>[k,m[k]]);
+    makeBar('c-mweight',s.map(x=>x[0]),s.map(x=>x[1].w),'#7c3aed');
+    document.getElementById('month-tbl').innerHTML=makeTable(['Month','Trips','Weight (T)','Avg (T)'],
+      s.map(([mn,v])=>[mn,v.t,v.w.toFixed(1),(v.w/v.t).toFixed(1)]));
+  }
+}
+</script>
+</body>
+</html>
